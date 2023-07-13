@@ -45,4 +45,18 @@ This is a server that handles request posted by an ESP8226 module through the po
 
 ### SUCCESS RESPONSE: renders html page
 
+---
+
+### URL: http://127.0.0.1:8000/static/db.json
+
+### METHOD: GET
+
+### SUCCESS RESPONSE: Returns the file where the data is stored (database)
+
+```
+Response {type: 'basic', url: 'http://127.0.0.1:8000/static/db.json', redirected: false, status: 200, ok: true, …}
+(index):242 {frequency: 50.02, voltage: 200.02}
+
+```
+
 #### NOTE: THE URL ABOVE ARE JUST DEVELOPMENT VERSION
