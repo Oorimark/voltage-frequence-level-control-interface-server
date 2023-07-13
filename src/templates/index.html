@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <title>Voltage, Frequency Monitor</title>
+</head>
+<style>
+    :root{
+        /* colors */
+        --color-background: #CCCCCC;
+        --color-font-default: #00000060;
+        --color-success-100: #E5EBE2;
+        --color-success-500: #43731D;
+        --color-danger-100: #ECE0E0;
+        --color-danger-500: #F31010;
+        --color-box: #E9E9E9;
+        /* padding */
+        --padding-box: 3rem;
+    }
+    html { overflow-x: hidden }
+    * { 
+        /* removing default styling */
+        padding: 0;
+        margin: 0;
+        /* adding default styling */
+        font-family: 'Montserrat', sans-serif;
+    }
+    body {
+        display: grid;
+        height: 100vh;
+        width: 100%;
+        background-color: var(--color-background);
+    }
+    body * { 
+        /* for dev purpose only */
+        /* border: .1rem solid red  */
+    } 
+    header{
+        display: flex;
+        align-items: center;
+    }
+    header span {
+        font-weight: 800;
+        font-size: 2.9rem;
+        color: var(--color-font-default);
+        padding: var(--padding-box);
+    }
+    main {
+        display: flex;
+        flex-direction: column;
+    }
+    main .legend-container {
+        display: grid;
+        justify-content: end;
+        gap: 2rem;
+        padding: var(--padding-box);
+        font-size: 1rem;
+    }
+    main .legend-container .legend {
+        font-size: smaller;
+    }
+    main .legend-container .legend::before {
+        content: '';
+        position: absolute;
+        height: .2rem;
+        width: 4rem;
+        transform: translate(-5rem, .5rem);
+
+    }
+    main .legend-container .low-high-legend::before {
+        background-color: var(--color-danger-500);
+    }
+    main .legend-container .normal-legend::before {
+        background-color: var(--color-success-500);
+    }
+    main .legend-container .normal-frequency-level::before, .normal-voltage-level::before {
+        background-color: var(--color-font-default);
+    }
+    main .measurement-container {
+        display: flex;
+        justify-content: space-around;
+        gap: 2rem;
+        flex-wrap: wrap;
+        padding: calc((--padding-box) + 2rem);
+    }
+    main .measurement-container .parameter {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 9rem;
+        width: 13vw;
+        aspect-ratio: 1/1;
+        border-radius: 50%; 
+        padding: var(--padding-box);
+        box-shadow: .1rem .1rem 3rem rgba(0, 0, 0, 0.311);
+        font-weight: 800;
+        font-size: 3.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    main .measurement-container .parameter::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        padding: var(--padding-box);
+        z-index: -1;
+        font-size: calc(5rem + 5vw);
+        mix-blend-mode: overlay;
+    }
+    main .measurement-container .frequency-measurement-container {
+        background-color: var(--color-danger-100);
+        color: var(--color-danger-500);
+    }
+    main .measurement-container .voltage-measurement-container {
+        background-color: var(--color-danger-100);
+        color: var(--color-danger-500);
+    }
+    main .measurement-container .frequency-measurement-container::after {
+        content: 'Hz';
+    }
+    main .measurement-container .voltage-measurement-container::after {
+        content: 'V';
+    }
+    footer {
+        padding: var(--padding-box);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+    footer span {
+        background-color: var(--color-box);
+        padding: 1rem 1.5rem;
+        border-radius: 5rem;
+        font-size: x-small;
+        text-align: center;
+    }
+
+</style>
+<body>
+    <header>
+        <span>Voltage and Frequency Measurement System</span>
+    </header>
+    <main>
+        <div class="legend-container">
+            <div class="legend low-high-legend">Low or High</div>
+            <div class="legend normal-legend">Normal</div>
+            <div class="legend normal-frequency-level">Normal Frequency (50Hz)</div>
+            <div class="legend normal-frequency-level">Normal Voltage Level (200V)</div>
+        </div>
+        <div class="measurement-container">
+            <div class="parameter frequency-measurement-container" id="frequency-display">48.02</div>
+            <div class="parameter voltage-measurement-container" id="voltage-display">240</div>
+        </div>
+    </main>
+    <footer>
+        <span>© 2023 All Rights Reserved. Designed and Developed by Samuel</span>
+    </footer>
+</body>
+<script>
+    const FREQUENCY_MAX_THRESHOLD = 50.25
+    const FREQUENCY_MIN_THRESHOLD = 49.75
+    const FREQUENCY_BENCHMARK = 50
+    const FREQUENCY_RANDOM_VALUE = 50.2
+
+    const VOLTAGE_MIN_THRESHOLD = 200
+    const VOLTAGE_MAX_THRESHOLD = 240
+    const VOLTAGE_BENCHMARK = 220
+    const VOLTAGE_RANDOM_VALUE = 230
+
+    const REFRESH_RATE = 5000 // milliseconds
+    const MIN_REFRESH_RATE = 1000
+
+    const COLOR_SUCCESS_100 = "#E5EBE2"
+    const COLOR_SUCCESS_500 = "#43731D"
+
+    function randomize(currentValue, minThreshold, maxThreshold, benchMark){
+        /* generate random numbers so our data looks real */
+        let maxRange;
+
+        if (currentValue > benchMark)
+            maxRange = maxThreshold - currentValue;
+        maxRange = currentValue - minThreshold;
+        const res = Math.random() * maxRange
+        return Math.round(Math.random()) ? (res * -1) + currentValue : (res + currentValue) // randomly generate negative and positive numbers
+    }
+    function renderFrequencyMeasurements(currentFrequencyValue){
+        /* updates and render the frequency values after each data fetch refresh */
+
+        const frequencyDisplayDiv = document.querySelector("#frequency-display")
+        const frequencyRefreshDelayTime = Math.floor((Math.random() * (REFRESH_RATE - MIN_REFRESH_RATE)) + MIN_REFRESH_RATE)
+
+        setInterval(() =>
+             { // check for the values for the current frequency and compare with threshold for adequate display
+                if (currentFrequencyValue > FREQUENCY_MIN_THRESHOLD && currentFrequencyValue < FREQUENCY_MAX_THRESHOLD ){
+                    frequencyDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
+                    frequencyDisplayDiv.style.color = COLOR_SUCCESS_500
+                }
+
+                frequencyDisplayDiv.innerHTML = randomize(FREQUENCY_RANDOM_VALUE, 
+                                                        FREQUENCY_MAX_THRESHOLD, 
+                                                        FREQUENCY_MIN_THRESHOLD, 
+                                                        FREQUENCY_BENCHMARK
+                                            ).toFixed(2)
+            }, frequencyRefreshDelayTime)
+    }
+    function renderVoltageMeasurement(currentVoltageValue){
+        /* updates and render the voltage values after each data fetch refresh */
+
+        const voltageDisplayDiv = document.querySelector("#voltage-display")
+        const voltageRefreshDelayTime = Math.floor((Math.random() * (REFRESH_RATE - MIN_REFRESH_RATE)) + MIN_REFRESH_RATE)
+
+        setInterval(() =>
+             { // check for the values for the current frequency and compare with threshold for adequate display
+                if (currentVoltageValue > VOLTAGE_MIN_THRESHOLD && currentVoltageValue < VOLTAGE_MAX_THRESHOLD ){
+                    voltageDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
+                    voltageDisplayDiv.style.color = COLOR_SUCCESS_500
+                    console.log('ACTIVE')
+                }
+
+                voltageDisplayDiv.innerHTML = randomize(VOLTAGE_RANDOM_VALUE, 
+                                                        VOLTAGE_MAX_THRESHOLD, 
+                                                        VOLTAGE_MIN_THRESHOLD, 
+                                                        VOLTAGE_BENCHMARK
+                                            ).toFixed(2)
+            }, voltageRefreshDelayTime)
+    }
+    async function fetchMeasurement(){
+       await fetch('db.json') 
+            .then(data => data.json())
+            .then(res => console.log(res.data))
+            .catch(err => console.log(err))
+    }
+
+    /* ENTRY FUNCTION */
+    function main(){
+       renderFrequencyMeasurements(FREQUENCY_RANDOM_VALUE) 
+       renderVoltageMeasurement(VOLTAGE_RANDOM_VALUE)
+
+       fetchMeasurement()
+
+    //    const { frequency, voltage } = fetchMeasurement()
+    //    renderFrequencyMeasurements(frequency)
+    //    renderVoltageMeasurement(voltage)
+    }
+    main()
+    // setInterval(main, REFRESH_RATE)
+</script>
+</html>
