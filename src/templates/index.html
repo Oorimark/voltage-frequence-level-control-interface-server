@@ -161,6 +161,7 @@
     </footer>
 </body>
 <script>
+    /* constants */
     const FREQUENCY_MAX_THRESHOLD = 50.25
     const FREQUENCY_MIN_THRESHOLD = 49.75
     const FREQUENCY_BENCHMARK = 50
@@ -186,10 +187,12 @@
 
         if (currentValue > benchMark)
             maxRange = maxThreshold - currentValue;
+
         maxRange = currentValue - minThreshold;
         const res = Math.random() * maxRange
         return Math.round(Math.random()) ? (res * -1) + currentValue : (res + currentValue) // randomly generate negative and positive numbers
     }
+
     function renderFrequencyMeasurements(currentFrequencyValue){
         /* updates and render the frequency values after each data fetch refresh */
 
@@ -197,7 +200,8 @@
         const frequencyRefreshDelayTime = Math.floor((Math.random() * (REFRESH_RATE - MIN_REFRESH_RATE)) + MIN_REFRESH_RATE)
 
         setInterval(() =>
-             { // check for the values for the current frequency and compare with threshold for adequate display
+             { 
+                // check for the values for the current frequency and compare with threshold for adequate display
                 if (currentFrequencyValue > FREQUENCY_MIN_THRESHOLD && currentFrequencyValue < FREQUENCY_MAX_THRESHOLD ){
                     frequencyDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
                     frequencyDisplayDiv.style.color = COLOR_SUCCESS_500
@@ -206,13 +210,14 @@
                     frequencyDisplayDiv.style.color = COLOR_DANGER_500
                 }
 
-                frequencyDisplayDiv.innerHTML = randomize(FREQUENCY_RANDOM_VALUE, 
+                frequencyDisplayDiv.innerHTML = randomize(currentFrequencyValue, 
                                                         FREQUENCY_MAX_THRESHOLD, 
                                                         FREQUENCY_MIN_THRESHOLD, 
                                                         FREQUENCY_BENCHMARK
                                             ).toFixed(2)
             }, frequencyRefreshDelayTime)
     }
+
     function renderVoltageMeasurement(currentVoltageValue){
         /* updates and render the voltage values after each data fetch refresh */
 
@@ -220,7 +225,8 @@
         const voltageRefreshDelayTime = Math.floor((Math.random() * (REFRESH_RATE - MIN_REFRESH_RATE)) + MIN_REFRESH_RATE)
 
         setInterval(() =>
-             { // check for the values for the current frequency and compare with threshold for adequate display
+             { 
+                // check for the values for the current frequency and compare with threshold for adequate display
                 if (currentVoltageValue > VOLTAGE_MIN_THRESHOLD && currentVoltageValue < VOLTAGE_MAX_THRESHOLD ){
                     voltageDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
                     voltageDisplayDiv.style.color = COLOR_SUCCESS_500
@@ -229,14 +235,16 @@
                     voltageDisplayDiv.style.color = COLOR_SUCCESS_500
                 }
 
-                voltageDisplayDiv.innerHTML = randomize(VOLTAGE_RANDOM_VALUE, 
+                voltageDisplayDiv.innerHTML = randomize(currentVoltageValue, 
                                                         VOLTAGE_MAX_THRESHOLD, 
                                                         VOLTAGE_MIN_THRESHOLD, 
                                                         VOLTAGE_BENCHMARK
                                             ).toFixed(2)
             }, voltageRefreshDelayTime)
     }
+
     async function fetchMeasurement(){
+       /* fetch data from db.json through the /static/db.json route */
        return await fetch('/static/db.json') 
             .then(data => {console.log(data); return data.json()})
             .then(res => {console.log(res.data); return (res.data)})
@@ -245,8 +253,6 @@
 
     /* ENTRY FUNCTION */
     async function main(){
-    //    renderFrequencyMeasurements(FREQUENCY_RANDOM_VALUE) 
-    //    renderVoltageMeasurement(VOLTAGE_RANDOM_VALUE)
        console.log("MAIN FUNCTION IS RUNNING..")
        await fetchMeasurement() 
         .then(res => {
@@ -255,6 +261,7 @@
             renderVoltageMeasurement(voltage)
         })
     }
+
     setInterval(main, REFRESH_RATE)
 </script>
 </html>
