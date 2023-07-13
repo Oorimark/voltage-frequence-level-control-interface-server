@@ -152,8 +152,8 @@
             <div class="legend normal-frequency-level">Normal Voltage Level (200V)</div>
         </div>
         <div class="measurement-container">
-            <div class="parameter frequency-measurement-container" id="frequency-display">48.02</div>
-            <div class="parameter voltage-measurement-container" id="voltage-display">240</div>
+            <div class="parameter frequency-measurement-container" id="frequency-display">0.00</div>
+            <div class="parameter voltage-measurement-container" id="voltage-display">0.00</div>
         </div>
     </main>
     <footer>
@@ -171,11 +171,14 @@
     const VOLTAGE_BENCHMARK = 220
     const VOLTAGE_RANDOM_VALUE = 230
 
-    const REFRESH_RATE = 5000 // milliseconds
+    const REFRESH_RATE = 30000 // milliseconds
     const MIN_REFRESH_RATE = 1000
 
     const COLOR_SUCCESS_100 = "#E5EBE2"
     const COLOR_SUCCESS_500 = "#43731D"
+    const COLOR_DANGER_100 = "#ECE0E0"
+    const COLOR_DANGER_500 = "#F31010"
+    
 
     function randomize(currentValue, minThreshold, maxThreshold, benchMark){
         /* generate random numbers so our data looks real */
@@ -198,6 +201,9 @@
                 if (currentFrequencyValue > FREQUENCY_MIN_THRESHOLD && currentFrequencyValue < FREQUENCY_MAX_THRESHOLD ){
                     frequencyDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
                     frequencyDisplayDiv.style.color = COLOR_SUCCESS_500
+                } else {
+                    frequencyDisplayDiv.style.backgroundColor = COLOR_DANGER_100
+                    frequencyDisplayDiv.style.color = COLOR_DANGER_500
                 }
 
                 frequencyDisplayDiv.innerHTML = randomize(FREQUENCY_RANDOM_VALUE, 
@@ -218,7 +224,9 @@
                 if (currentVoltageValue > VOLTAGE_MIN_THRESHOLD && currentVoltageValue < VOLTAGE_MAX_THRESHOLD ){
                     voltageDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
                     voltageDisplayDiv.style.color = COLOR_SUCCESS_500
-                    console.log('ACTIVE')
+                } else {
+                    voltageDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
+                    voltageDisplayDiv.style.color = COLOR_SUCCESS_500
                 }
 
                 voltageDisplayDiv.innerHTML = randomize(VOLTAGE_RANDOM_VALUE, 
@@ -229,24 +237,24 @@
             }, voltageRefreshDelayTime)
     }
     async function fetchMeasurement(){
-       await fetch('db.json') 
-            .then(data => data.json())
-            .then(res => console.log(res.data))
+       return await fetch('/static/db.json') 
+            .then(data => {console.log(data); return data.json()})
+            .then(res => {console.log(res.data); return (res.data)})
             .catch(err => console.log(err))
     }
 
     /* ENTRY FUNCTION */
-    function main(){
-       renderFrequencyMeasurements(FREQUENCY_RANDOM_VALUE) 
-       renderVoltageMeasurement(VOLTAGE_RANDOM_VALUE)
-
-       fetchMeasurement()
-
-    //    const { frequency, voltage } = fetchMeasurement()
-    //    renderFrequencyMeasurements(frequency)
-    //    renderVoltageMeasurement(voltage)
+    async function main(){
+    //    renderFrequencyMeasurements(FREQUENCY_RANDOM_VALUE) 
+    //    renderVoltageMeasurement(VOLTAGE_RANDOM_VALUE)
+       console.log("MAIN FUNCTION IS RUNNING..")
+       await fetchMeasurement() 
+        .then(res => {
+            const { frequency, voltage } = res
+            renderFrequencyMeasurements(frequency)
+            renderVoltageMeasurement(voltage)
+        })
     }
-    main()
-    // setInterval(main, REFRESH_RATE)
+    setInterval(main, REFRESH_RATE)
 </script>
 </html>

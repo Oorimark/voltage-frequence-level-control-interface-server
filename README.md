@@ -4,7 +4,7 @@ This is a server that handles request posted by an ESP8226 module through the po
 
 ## API DOCUMENTATION
 
-### URL: http://127.0.0.1:8000/post-data'
+### URL: http://127.0.0.1:8000/post-data
 
 ### METHOD: POST
 
@@ -44,3 +44,5 @@ This is a server that handles request posted by an ESP8226 module through the po
 ### METHOD: GET
 
 ### SUCCESS RESPONSE: renders html page
+
+#### NOTE: THE URL ABOVE ARE JUST DEVELOPMENT VERSION

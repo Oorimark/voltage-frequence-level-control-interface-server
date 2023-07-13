@@ -1,14 +1,19 @@
 """ main.py: Entry file """
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory, url_for 
 import json
 from waitress import serve
 
 PRODUCTION_READY = 0
-app = Flask(__name__, static_url_path='/static')
+app = Flask(__name__)
 
 @app.route("/")
 def home():
     return render_template('index.html')
+
+@app.route("/static/<path:path>")
+def send_static(path):
+    # return send_from_directory('static', path)
+    return url_for('static', filename='db.json')
 
 @app.route("/post-data", methods=['POST'])
 def post_data():
