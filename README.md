@@ -60,3 +60,7 @@ Response {type: 'basic', url: 'http://127.0.0.1:8000/static/db.json', redirecte
 ```
 
 #### NOTE: THE URL ABOVE ARE JUST DEVELOPMENT VERSION
+
+## REQUIREMENTS
+
+1. Always set PRODUCTION_READY variable in the src/app.py script to 1 when deploying
