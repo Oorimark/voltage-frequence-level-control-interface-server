@@ -83,10 +83,13 @@
     main .measurement-container {
         display: flex;
         justify-content: space-around;
-        column-gap: 2rem;
-        row-gap: 2rem;
         flex-wrap: wrap;
+        gap: 2rem;
         padding: calc(var(--padding-box) + 3rem);
+    }
+    main .measurement-container:last-child {
+        /* gap, column-gap, row-gap not supported in mobile chrome */
+        margin-top: 2rem;
     }
     main .measurement-container .parameter {
         display: flex;
