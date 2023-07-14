@@ -14,12 +14,12 @@
         --color-background: #CCCCCC;
         --color-font-default: #00000060;
         --color-success-100: #E5EBE2;
-        --color-success-500: #43731D;
+        --color-success-500: #43731D89;
         --color-danger-100: #ECE0E0;
-        --color-danger-500: #F31010;
+        --color-danger-500: #F3101050;
         --color-box: #E9E9E9;
         /* padding */
-        --padding-box: 3rem;
+        --padding-box: 2.3rem;
     }
     html { overflow-x: hidden }
     * { 
@@ -28,6 +28,9 @@
         margin: 0;
         /* adding default styling */
         font-family: 'Montserrat', sans-serif;
+
+        /* for dev purpose only */
+        /* border: .1rem solid red  */
     }
     body {
         display: grid;
@@ -35,10 +38,6 @@
         width: 100%;
         background-color: var(--color-background);
     }
-    body * { 
-        /* for dev purpose only */
-        /* border: .1rem solid red  */
-    } 
     header{
         display: flex;
         align-items: center;
@@ -52,6 +51,7 @@
     main {
         display: flex;
         flex-direction: column;
+        width: 100%;
     }
     main .legend-container {
         display: grid;
@@ -85,7 +85,7 @@
         justify-content: space-around;
         gap: 2rem;
         flex-wrap: wrap;
-        padding: calc((--padding-box) + 2rem);
+        padding: calc(var(--padding-box) + 3rem);
     }
     main .measurement-container .parameter {
         display: flex;
@@ -96,9 +96,10 @@
         aspect-ratio: 1/1;
         border-radius: 50%; 
         padding: var(--padding-box);
-        box-shadow: .1rem .1rem 3rem rgba(0, 0, 0, 0.311);
+        box-shadow: .1rem .1rem 4rem rgba(0, 0, 0, 0.311);
         font-weight: 800;
         font-size: 3.5rem;
+        font-size: calc(2rem + 2vw);
         position: relative;
         z-index: 1;
     }
@@ -109,7 +110,10 @@
         padding: var(--padding-box);
         z-index: -1;
         font-size: calc(5rem + 5vw);
+        font-weight: 900;
         mix-blend-mode: overlay;
+        color: #000000;
+        /* opacity: .4; */
     }
     main .measurement-container .frequency-measurement-container {
         background-color: var(--color-danger-100);
@@ -138,7 +142,6 @@
         font-size: x-small;
         text-align: center;
     }
-
 </style>
 <body>
     <header>
@@ -148,8 +151,8 @@
         <div class="legend-container">
             <div class="legend low-high-legend">Low or High</div>
             <div class="legend normal-legend">Normal</div>
-            <div class="legend normal-frequency-level">Normal Frequency (50Hz)</div>
-            <div class="legend normal-frequency-level">Normal Voltage Level (200V)</div>
+            <div class="legend normal-frequency-level">Normal Frequency (49.75 - 50.25Hz)</div>
+            <div class="legend normal-frequency-level">Normal Voltage Level (200 - 240V)</div>
         </div>
         <div class="measurement-container">
             <div class="parameter frequency-measurement-container" id="frequency-display">0.00</div>
@@ -161,7 +164,6 @@
     </footer>
 </body>
 <script>
-    /* constants */
     const FREQUENCY_MAX_THRESHOLD = 50.25
     const FREQUENCY_MIN_THRESHOLD = 49.75
     const FREQUENCY_BENCHMARK = 50
@@ -172,11 +174,12 @@
     const VOLTAGE_BENCHMARK = 220
     const VOLTAGE_RANDOM_VALUE = 230
 
-    const REFRESH_RATE = 30000 // milliseconds
-    const MIN_REFRESH_RATE = 1000
+    const REFRESH_RATE = 20000 // milliseconds
+    const MIN_REFRESH_RATE = 1000 // milliseconds
+    const CORRECTING_FACTOR = 5000 // milliseconds
 
     const COLOR_SUCCESS_100 = "#E5EBE2"
-    const COLOR_SUCCESS_500 = "#43731D"
+    const COLOR_SUCCESS_500 = "#43731D89"
     const COLOR_DANGER_100 = "#ECE0E0"
     const COLOR_DANGER_500 = "#F31010"
     
@@ -197,24 +200,24 @@
         /* updates and render the frequency values after each data fetch refresh */
 
         const frequencyDisplayDiv = document.querySelector("#frequency-display")
-        const frequencyRefreshDelayTime = Math.floor((Math.random() * (REFRESH_RATE - MIN_REFRESH_RATE)) + MIN_REFRESH_RATE)
+        const frequencyRefreshDelayTime = Math.floor((Math.random() * (REFRESH_RATE - MIN_REFRESH_RATE - CORRECTING_FACTOR)) + MIN_REFRESH_RATE)
 
-        setInterval(() =>
-             { 
+        return setInterval(() =>
+             { const randomizedFrequencyValue= randomize(currentFrequencyValue, 
+                                                        FREQUENCY_MAX_THRESHOLD, 
+                                                        FREQUENCY_MIN_THRESHOLD, 
+                                                        FREQUENCY_BENCHMARK
+                                            ).toFixed(2)
+
                 // check for the values for the current frequency and compare with threshold for adequate display
-                if (currentFrequencyValue > FREQUENCY_MIN_THRESHOLD && currentFrequencyValue < FREQUENCY_MAX_THRESHOLD ){
+                if (randomizedFrequencyValue > FREQUENCY_MIN_THRESHOLD && randomizedFrequencyValue < FREQUENCY_MAX_THRESHOLD ){
                     frequencyDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
                     frequencyDisplayDiv.style.color = COLOR_SUCCESS_500
                 } else {
                     frequencyDisplayDiv.style.backgroundColor = COLOR_DANGER_100
                     frequencyDisplayDiv.style.color = COLOR_DANGER_500
                 }
-
-                frequencyDisplayDiv.innerHTML = randomize(currentFrequencyValue, 
-                                                        FREQUENCY_MAX_THRESHOLD, 
-                                                        FREQUENCY_MIN_THRESHOLD, 
-                                                        FREQUENCY_BENCHMARK
-                                            ).toFixed(2)
+                frequencyDisplayDiv.innerHTML = randomizedFrequencyValue
             }, frequencyRefreshDelayTime)
     }
 
@@ -222,25 +225,32 @@
         /* updates and render the voltage values after each data fetch refresh */
 
         const voltageDisplayDiv = document.querySelector("#voltage-display")
-        const voltageRefreshDelayTime = Math.floor((Math.random() * (REFRESH_RATE - MIN_REFRESH_RATE)) + MIN_REFRESH_RATE)
+        const voltageRefreshDelayTime = Math.floor((Math.random() * (REFRESH_RATE - MIN_REFRESH_RATE - CORRECTING_FACTOR)) + MIN_REFRESH_RATE)
 
-        setInterval(() =>
-             { 
-                // check for the values for the current frequency and compare with threshold for adequate display
-                if (currentVoltageValue > VOLTAGE_MIN_THRESHOLD && currentVoltageValue < VOLTAGE_MAX_THRESHOLD ){
-                    voltageDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
-                    voltageDisplayDiv.style.color = COLOR_SUCCESS_500
-                } else {
-                    voltageDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
-                    voltageDisplayDiv.style.color = COLOR_SUCCESS_500
-                }
-
-                voltageDisplayDiv.innerHTML = randomize(currentVoltageValue, 
+        return setInterval(() =>
+             { const randomizedVoltageValue = randomize(currentVoltageValue, 
                                                         VOLTAGE_MAX_THRESHOLD, 
                                                         VOLTAGE_MIN_THRESHOLD, 
                                                         VOLTAGE_BENCHMARK
                                             ).toFixed(2)
+
+                // check for the values for the current frequency and compare with threshold for adequate display
+                if (randomizedVoltageValue > VOLTAGE_MIN_THRESHOLD && randomizedVoltageValue < VOLTAGE_MAX_THRESHOLD ){
+                    voltageDisplayDiv.style.backgroundColor = COLOR_SUCCESS_100
+                    voltageDisplayDiv.style.color = COLOR_SUCCESS_500
+                } else {
+                    voltageDisplayDiv.style.backgroundColor = COLOR_DANGER_100
+                    voltageDisplayDiv.style.color =  COLOR_DANGER_500
+                }
+                
+                voltageDisplayDiv.innerHTML = randomizedVoltageValue 
             }, voltageRefreshDelayTime)
+    }
+
+    function watch(interval){
+        /* watches a setInterval in order to clear the interval before the next refresh */
+        const timeBeforeRefresh = 1000;
+        setTimeout(() => { clearInterval(interval) }, REFRESH_RATE - timeBeforeRefresh)
     }
 
     async function fetchMeasurement(){
@@ -257,11 +267,13 @@
        await fetchMeasurement() 
         .then(res => {
             const { frequency, voltage } = res
-            renderFrequencyMeasurements(frequency)
-            renderVoltageMeasurement(voltage)
+            watch(renderFrequencyMeasurements(frequency))
+            watch(renderVoltageMeasurement(voltage))
+            // renderFrequencyMeasurements(frequency)
+            // renderVoltageMeasurement(voltage)
         })
     }
-
+    main()
     setInterval(main, REFRESH_RATE)
 </script>
 </html>
