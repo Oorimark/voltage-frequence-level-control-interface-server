@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, jsonify, send_from_directory,
 import json
 from waitress import serve
 
-PRODUCTION_READY = 0
+PRODUCTION_READY = 1
 app = Flask(__name__)
 
 @app.route("/")
@@ -19,7 +19,6 @@ def send_static(path):
 def post_data():
     data = request.json
     if data:
-        print(data)
         with open('db.json', 'w') as db:
             db.write(json.dumps(data))
         return jsonify({"res": "data posted success"})
@@ -27,5 +26,5 @@ def post_data():
 
 if PRODUCTION_READY:
     # for production
-    serve(app, '0.0.0.0', threads=4)
-app.run(debug=True, port=8000)
+    serve(app, host='0.0.0.0', port=50100, threads=2)
+else: app.run(debug=True, port=8000)
