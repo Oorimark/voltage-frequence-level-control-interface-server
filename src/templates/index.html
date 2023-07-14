@@ -87,10 +87,6 @@
         gap: 2rem;
         padding: calc(var(--padding-box) + 3rem);
     }
-    main .measurement-container:last-child {
-        /* gap, column-gap, row-gap not supported in mobile chrome */
-        margin-top: 2rem;
-    }
     main .measurement-container .parameter {
         display: flex;
         justify-content: center;
@@ -127,6 +123,8 @@
     main .measurement-container .voltage-measurement-container {
         background-color: var(--color-danger-100);
         color: var(--color-danger-500);
+        /* gap, column-gap, row-gap not supported in mobile chrome browser */
+        margin-top: 0rem;
     }
     main .measurement-container .frequency-measurement-container::after {
         content: 'Hz';
@@ -146,6 +144,11 @@
         border-radius: 5rem;
         font-size: x-small;
         text-align: center;
+    }
+    @media screen and (min-width: 50em){
+        main .measurement-container .voltage-measurement-container {
+            margin-top: 0rem;
+        }
     }
 </style>
 <body>
@@ -261,8 +264,8 @@
     async function fetchMeasurement(){
        /* fetch data from db.json through the /static/db.json route */
        return await fetch('/static/db.json') 
-            .then(data => {console.log(data); return data.json()})
-            .then(res => {console.log(res.data); return (res.data)})
+            .then(data => data.json())
+            .then(res => res.data)
             .catch(err => console.log(err))
     }
 
@@ -274,8 +277,6 @@
             const { frequency, voltage } = res
             watch(renderFrequencyMeasurements(frequency))
             watch(renderVoltageMeasurement(voltage))
-            // renderFrequencyMeasurements(frequency)
-            // renderVoltageMeasurement(voltage)
         })
     }
     main()
