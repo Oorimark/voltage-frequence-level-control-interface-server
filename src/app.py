@@ -1,9 +1,9 @@
 """ main.py: Entry file """
-from flask import Flask, render_template, request, jsonify, send_from_directory, url_for 
+from flask import Flask, render_template, request, jsonify, url_for 
 import json
 from waitress import serve
 
-PRODUCTION_READY = 1
+PRODUCTION_READY = 0
 app = Flask(__name__)
 
 @app.route("/")
