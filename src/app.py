@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, jsonify, url_for
 import json
 from waitress import serve
 
-PRODUCTION_READY = 0
+PRODUCTION_READY = 1
 app = Flask(__name__)
 
 @app.route("/")
